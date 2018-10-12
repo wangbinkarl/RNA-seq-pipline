@@ -1,0 +1,5 @@
+#splice
+
+$ cufflinks -p 8 -o /home/wwkong/ros1/RNA-Seq/*/dme_b_clout */accepted_hits.sam
+
+#*/transcripts.gtf

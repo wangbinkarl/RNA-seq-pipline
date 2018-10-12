@@ -1,0 +1,5 @@
+#format transform
+
+$ fastq-dump --split-3 /home/wwkong/ros1/*/*.sra
+
+# --split-3 :for mate-pairs 

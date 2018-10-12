@@ -1,0 +1,3 @@
+#Differential expression analysis 
+
+$ cuffdiff -o diff_out -b tair10.fa -p 8 -L wt,dme -u merged_asm/merged.gtf ./DME/dmewt_a/accepted_hits.sam,./DME/dmewt_b/accepted_hits.sam,./DME/dmewt_c/accepted_hits.sam ./DME/dme_a/accepted_hits.sam,./DME/dme_b/accepted_hits.sam,./DME/dme_c/accepted_hits.sam,./DME/dme_d/accepted_hits.sam

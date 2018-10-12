@@ -1,0 +1,5 @@
+#alignment
+
+$ tophat -p 8 -G TAIR10.36.gtf --library-type fr-unstranded --no-discordant --no-convert-bam --keep-fasta-order -o WT_a tair10 *.fastq *.fastq
+
+# */accepted_hits.sam

@@ -1,0 +1,3 @@
+#cuffmerge
+
+$ cuffmerge -g TAIR10.36.gtf -s tair10.fa -p 8 assemblies.txt

@@ -1,0 +1,3 @@
+#build index
+
+$ bowtie2-build TAIR10.dna.2017.fa tair10

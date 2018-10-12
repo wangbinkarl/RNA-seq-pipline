@@ -1,0 +1,12 @@
+#build dir
+
+$ touch assemblies.txt
+$ echo
+/home/wwkong/ros1/RNA-Seq/WT_a/WT_a_clout/transcripts.gtf
+/home/wwkong/ros1/RNA-Seq/WT_b/WT_b_clout/transcripts.gtf
+/home/wwkong/ros1/RNA-Seq/WT_c/WT_c_clout/transcripts.gtf
+/home/wwkong/ros1/RNA-Seq/dme_a/dme_a_clout/transcripts.gtf
+/home/wwkong/ros1/RNA-Seq/dme_b/dme_b_clout/transcripts.gtf
+/home/wwkong/ros1/RNA-Seq/dme_c/dme_c_clout/transcripts.gtf
+/home/wwkong/ros1/RNA-Seq/dme_d/dme_d_clout/transcripts.gtf
+> assemblies.txt
