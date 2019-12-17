@@ -1,0 +1,158 @@
+#!/usr/bin/env python:
+# -*- encoding:utf-8 -*-
+# Purpose: 
+# Author: Wangb
+# Note:
+# Last updated on: 2019-9-25
+import os
+import time
+import sys
+import gzip
+import argparse
+import subprocess
+
+#机器人地址，字典格式
+machineaddress = {
+        "X1": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=b4b94939-21a9-40a6-bb0d-c0b6d2cd8d4f",
+        "X2": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=7a8d4122-49f9-4b87-a3d7-edd336daabe0",
+        "X3": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=28cc16ae-bd08-4875-b961-0fa527de2beb",
+        "X4": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=d609d620-587b-4b62-ad26-5e5aa197e514",
+        "X5": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=a8f1d2c4-d9bd-45ce-ae06-ff6f0054a49d",
+        "4k1": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=1da51736-7b6c-49a5-b058-5936310ba38e",
+        "4k2": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=4c9455c1-635d-4dc9-aab9-2a9934e6b465",
+        "4k3": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=99185d32-db17-46ec-982f-b5960da66840",
+        "NV1": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=f46124e4-2d7b-435b-aa5a-495049a15b99",
+        "NV2": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=647b4410-d2bd-4624-9b10-6261cde23803",
+        "NV3": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=cc796e78-6430-4214-95e5-724bef9a77c7",
+        "NV4": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=047f7589-4edb-449d-9bff-dc512dd5d3d9",
+        "nextseq": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=7f459595-9810-40a6-bd00-f20cf1b21e69",
+        "miseq": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=04dfc919-cc42-4167-98f7-a24da793555e",
+        "Other": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=93868f49-c079-4305-a36b-73ce826cdc76",
+        "Sequencer": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=81d9c891-9f8b-45f9-a4cf-9f3ee1e013e9",
+        "test": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=8683fd9e-27fe-41a1-ae5d-5b571cc91d2f"
+        }
+
+#调用shell发送
+def sendqiyeweixin(message, address):
+        cmd = """curl '%s' \
+        -H 'Content-Type: application/json' \
+        -d '
+        {
+        "msgtype": "text",
+        "text": {
+                        "content": "%s"
+        }
+        }'""" % (address, message)
+        os.system(cmd)
+
+#检查文件大小
+def size(filepath):
+	size = subprocess.check_output("du -sh %s"%filepath,shell=True).split()[0]
+	return size
+
+def main():
+	#传入参数
+	path = sys.argv[1]
+	wait_time = sys.argv[2]
+	
+	ids = path.split('/')[-1]
+	global address
+	address = machineaddress["test"]
+	os.chdir(path)
+	global status_list
+	global size_total
+	size_total = 0
+
+	HQ_start_time_R1 = 0;HQ_date_R1 = ""
+	mapping_start_time = 0;mapping_date = ""
+	dedup_start_time = 0;dedup_stop_time = 0;dedup_date = "";dedup_size = 0	
+	fileout = open('{}.log'.format(ids),'w')
+	while True:
+		if os.path.exists("{path}/1-QC/{ids}_R1_fastqc.zip".format(path=path,ids=ids)):
+			QC_start_time_R1 = time.time()
+			QC_date_R1= time.strftime("%Y-%m-%d %X",time.localtime(QC_start_time_R1))
+			fileout.write("Message {} {} Qc Run\n".format(QC_date_R1,ids))
+			#print "Message "+QC_date_R1+" "+ids+" Qc Run"
+			break
+		else:
+			pass
+	while True:
+		if os.path.exists("{path}/2-HQData/{ids}_R1_fastq.gz".format(path=path,ids=ids)):
+			HQ_start_time_R1 = time.time()
+			HQ_date_R1 = time.strftime("%Y-%m-%d %X",time.localtime(HQ_start_time_R1))
+			fileout.write("Message {} {} Qc Down\n".format(HQ_date_R1,ids))
+			fileout.write("Message {} {} Trim Run\n".format(HQ_date_R1,ids))
+			#print "Message "+HQ_date_R1+" "+ids+" Qc Down"
+			#print "Message "+HQ_date_R1+" "+ids+" Trim Run"
+			break
+		else:
+			pass
+
+	while True:
+		if os.path.exists("{path}/3-mapping/{ids}.bam".format(path=path,ids=ids)): 
+			mapping_start_time = time.time()
+			mapping_date = time.strftime("%Y-%m-%d %X",time.localtime(mapping_start_time))
+			fileout.write("Message {} {} Trim Down\n".format(mapping_date,ids))
+			fileout.write("Message {} {}  Bwa Run\n".format(mapping_date,ids))
+			#print "Message "+mapping_date+" "+ids+" Trim Down"
+			#print "Message "+mapping_date+" "+ids+" Bwa Run"
+			break
+		else:
+			pass
+	
+	dedup_start_size = float(subprocess.check_output("du -s 4-dedup ",shell=True).split()[0])
+	while True:
+		if os.path.exists("{path}/4-dedup/{ids}.sorted.markdup.bam".format(path=path,ids=ids)) and not dedup_start_time:
+			dedup_start_time = time.time()
+			dedup_date = time.strftime("%Y-%m-%d %X",time.localtime(dedup_start_time))
+			fileout.write("Message {} {} Bwa Down\n".format(dedup_date,ids))
+			fileout.write("Message {} {} Picard Run\n".format(dedup_date,ids))
+			#print "Message "+dedup_date+" "+ids+" Bwa Down"	
+			#print "Message "+dedup_date+" "+ids+" Picard Run"
+		elif os.path.exists("{path}/4-dedup/{ids}.sorted.markdup.bam".format(path=path,ids=ids)) and dedup_start_time:
+			time.sleep(int(wait_time))
+			dedup_size = size("{path}/4-dedup/{ids}.sorted.markdup.bam".format(path=path,ids=ids))
+			if dedup_size != dedup_start_size:
+				dedup_start_size = dedup_size	
+				continue
+			else:
+				dedup_stop_time = time.time()
+				dedup_stop_date = time.strftime("%Y-%m-%d %X",time.localtime(dedup_stop_time))
+				fileout.write("Message {} {} Picard Down\n\n".format(dedup_stop_date,ids))
+				#print "Message "+dedup_stop_date+" "+ids+" Picard Down"
+				break
+			
+		else:
+			pass
+
+	QC_size = size("{path}/1-QC/".format(path=path,ids=ids))	
+	HQ_size = size("{path}/2-HQData/".format(path=path,ids=ids))
+	Map_size = size("{path}/3-mapping/{ids}.bam".format(path=path,ids=ids))
+	
+	QC_running_time = str(round((HQ_start_time_R1 - QC_start_time_R1)/60.0,2))	
+	HQ_running_time = str(round((mapping_start_time - HQ_start_time_R1)/60.0,2))
+	Map_running_time= str(round((dedup_start_time - mapping_start_time)/60.0,2))
+	Dedup_running_time = str(round((dedup_stop_time - dedup_start_time)/60.0,2))
+
+	fileout.write("check {} {} QC Runtime {} Success\n".format(QC_date_R1,ids,QC_running_time))
+	#print "check "+QC_date_R1+" "+ids+" QC Runtime"+QC_running_time+" Success"
+	fileout.write("check {} {} Trim Runtime {} Success\n".format(HQ_date_R1,ids,HQ_running_time))
+	#print "check "+HQ_date_R1+" "+ids+" Trim Runtime "+HQ_running_time+" Success"
+	fileout.write("check {} {} Bwa Runtime {} Success\n".format(mapping_date,ids,Map_running_time))
+	#print "check "+mapping_date+" "+ids+" Bwa Runtime "+Map_running_time+" Success"
+	fileout.write("check {} {} Picard Runtime {}  Success\n\n".format(dedup_date,ids,Dedup_running_time))
+	#print "check "+dedup_date+" "+ids+" Picard Runtime "+Dedup_running_time+" Success"
+	
+	fileout.write("check {} {} QC FileSize {} Success\n".format(QC_date_R1,ids,QC_size))
+	#print "check "+QC_date_R1+" "+ids+" QC FileSize "+QC_size+" Success"
+	fileout.write("check {} {} Trim FileSize {} Success\n".format(HQ_date_R1,ids,HQ_size))
+	#print "check "+HQ_date_R1+" "+ids+" Trim FileSize "+HQ_size+" Success"
+	fileout.write("check {} {} Bwa FileSize {} Success\n".format(mapping_date,ids,Map_size))
+	#print "check "+mapping_date+" "+ids+" Bwa FileSize "+Map_size+" Success"
+	fileout.write("check {} {} Picard FileSize {} Success\n".format(dedup_date,ids,dedup_size))
+	#print "check "+dedup_date+" "+ids+" Picard FileSize "+dedup_size+" Success"
+	fileout.close()
+if __name__=='__main__':
+	main()
+
+
