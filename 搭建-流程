@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+if [ $# -ne 1 ];
+then
+    echo "usage bash run.sh id"
+    exit
+fi
+#filein 
+id = $1
+
+#software
+fastqc ='/GPFS01/softwares/FastQC/fastqc'
+trimmomatic ='/usr/bin/java -jar /GPFS01/softwares/Trimmomatic-0.36/trimmomatic-0.36.jar'
+picard = 'java -jar /GPFS01/softwares/picard-tools-2.5.0/picard.jar'
+
+#pipline
+#fastqc
+$fastqc -t 3 -o 1-QC     --noextract     rawdata/${id}_R1.fastq.gz     rawdata/${id}_R2.fastq.gz && unzip     1-QC/${id}_R1_fastqc.zip     -d 1-QC && unzip     1-QC/${id}_R2_fastqc.zip     -d 1-QC
+#filter 
+$trimmomatic PE -threads 30 rawdata/${id}_R1.fastq.gz rawdata/${id}_R2.fastq.gz 2-HQData/${id}_R1_fastq.gz 2-TMP/${id}_R1_unpaired.fastq.gz 2-HQData/${id}_R2_fastq.gz 2-TMP/${id}_R2_unpaired.fastq.gz ILLUMINACLIP:/GPFS01/softwares/Trimmomatic-0.36/adapters/TruSeq3-PE.fa:2:30:10:2:true LEADING:3 TRAILING:3 MINLEN:36
+#mapping
+mkdir 3-mapping/${id}/;
+bwa mem -t 20 -R '@RG\tID:'${id}'\tPL:illumina\tLB:'${id}'\tSM:'${id}'' /GPFS01/databases/ATGSeq/common/hs37d5.fa 2-HQData/${id}_R1_fastq.gz 2-HQData/${id}_R2_fastq.gz |samtools view -S -b - > 3-mapping/${id}/${id}.bam
+#sort bam
+samtools sort -@ 10 -m 4G -O bam -o 3-mapping/${id}/${id}.sorted.bam 3-mapping/${id}/${id}.bam
+#dedup
+$picard  MarkDuplicates REMOVE_DUPLICATES=true I=3-mapping/${id}/${id}.sorted.bam O=4-dedup/${id}.sorted.markdup.bam M=4-dedup/${id}.markdup_metrics.txt
